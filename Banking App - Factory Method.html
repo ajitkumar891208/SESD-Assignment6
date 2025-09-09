@@ -1,89 +1,298 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <title>Banking App - Factory Method Example</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Banking Website — Factory Method Demo</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    nav a { margin: 0 10px; text-decoration: none; color: blue; }
-    #content { margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+    :root{--bg:#f4f7fb;--card:#fff;--accent:#2563eb;--muted:#6b7280}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:var(--bg);margin:0;padding:32px;color:#111}
+    .container{max-width:980px;margin:0 auto}
+    .header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
+    h1{margin:0;font-size:20px}
+    form{display:grid;grid-template-columns:1fr 140px 140px;gap:10px;align-items:end}
+    label{font-size:13px;color:var(--muted)}
+    input,select{width:100%;padding:8px;border-radius:8px;border:1px solid #e6e9ef}
+    button{padding:10px 14px;border-radius:10px;border:0;background:var(--accent);color:white;cursor:pointer}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:16px;margin-top:16px}
+    .accounts-list{display:flex;flex-direction:column;gap:10px}
+    .acct{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;border:1px solid #eef2ff}
+    .small{font-size:13px;color:var(--muted)}
+    .controls{display:flex;gap:8px}
+    .muted{color:var(--muted)}
+    .note{font-size:13px;color:#0f172a88;margin-top:10px}
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
   </style>
 </head>
 <body>
+  <div class="container">
+    <div class="header">
+      <div class="card" style="padding:14px;display:flex;align-items:center;gap:12px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 10.5L12 5l9 5.5" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div>
+          <h1>Banking Website — Factory Method Demo</h1>
+          <div class="small">A single-file demo that uses the Factory Method pattern in JavaScript</div>
+        </div>
+      </div>
+    </div>
 
-  <h1>Banking App (Factory Method)</h1>
-  
-  <!-- Navigation -->
-  <nav>
-    <a href="#savings">Savings Account</a>
-    <a href="#current">Current Account</a>
-    <a href="#loan">Loan Account</a>
-  </nav>
+    <div class="card">
+      <form id="createForm">
+        <div>
+          <label for="holder">Account Holder Name</label>
+          <input id="holder" required placeholder="e.g. Priya Sharma" />
+        </div>
+        <div>
+          <label for="type">Account Type</label>
+          <select id="type">
+            <option value="savings">Savings Account</option>
+            <option value="current">Current Account</option>
+            <option value="loan">Loan Account</option>
+          </select>
+        </div>
+        <div>
+          <label for="balance">Initial Amount (₹)</label>
+          <input id="balance" type="number" min="0" value="1000" />
+        </div>
+        <div style="grid-column:1/-1;display:flex;justify-content:flex-end;margin-top:8px">
+          <button type="submit">Create Account</button>
+        </div>
+      </form>
 
-  <div id="content">Welcome! Choose an account type above.</div>
+      <div class="grid">
+        <div>
+          <h3 class="small" style="margin-bottom:8px">Accounts</h3>
+          <div id="accounts" class="accounts-list"></div>
+        </div>
+
+        <div>
+          <h3 class="small">Pattern Explanation</h3>
+          <div class="note">
+            This demo implements the <strong>Factory Method</strong> pattern:
+            <ul class="muted">
+              <li><strong>AccountFactory.create(type,...)</strong> is the factory method — it decides which concrete Account class to instantiate.</li>
+              <li>Each account type (SavingsAccount, CurrentAccount, LoanAccount) implements a common interface (deposit, withdraw, getInfo).</li>
+              <li>The UI interacts with accounts via the common interface — consumers don't need to know the concrete class.</li>
+            </ul>
+            Try creating accounts, depositing, withdrawing, or closing them.
+          </div>
+        </div>
+      </div>
+
+      <footer>Built for demonstration — Extend this to integrate with backend APIs, persistence and authentication.</footer>
+    </div>
+  </div>
 
   <script>
-    // "Products" - Account objects
-    function SavingsAccount() {
-      return {
-        type: "Savings Account",
-        interestRate: "4% per annum",
-        details: function() {
-          return `<h2>${this.type}</h2>
-                  <p>Interest Rate: ${this.interestRate}</p>
-                  <p>Best suited for individuals to save money with safety.</p>`;
-        }
-      };
-    }
+    // --------------------------
+    // Factory Method Implementation
+    // --------------------------
 
-    function CurrentAccount() {
-      return {
-        type: "Current Account",
-        overdraftLimit: "₹50,000",
-        details: function() {
-          return `<h2>${this.type}</h2>
-                  <p>Overdraft Limit: ${this.overdraftLimit}</p>
-                  <p>Designed for businesses with high transaction needs.</p>`;
-        }
-      };
-    }
+    // Base class (interface-like) for accounts
+    class Account {
+      constructor(holder, balance = 0) {
+        this.id = Account._nextId++;
+        this.holder = holder;
+        this.balance = Number(balance) || 0;
+        this.createdAt = new Date();
+      }
 
-    function LoanAccount() {
-      return {
-        type: "Loan Account",
-        loanType: "Personal Loan",
-        interestRate: "10% per annum",
-        details: function() {
-          return `<h2>${this.type}</h2>
-                  <p>Loan Type: ${this.loanType}</p>
-                  <p>Interest Rate: ${this.interestRate}</p>
-                  <p>Used for credit/loan facilities.</p>`;
-        }
-      };
-    }
+      deposit(amount) {
+        amount = Number(amount);
+        if (amount <= 0) throw new Error('Amount must be positive');
+        this.balance += amount;
+        return this.balance;
+      }
 
-    // Factory Method
-    function AccountFactory(accountType) {
-      switch(accountType) {
-        case 'savings': return SavingsAccount();
-        case 'current': return CurrentAccount();
-        case 'loan': return LoanAccount();
-        default: return { details: () => `<h2>404 - Account type not found</h2>` };
+      withdraw(amount) {
+        amount = Number(amount);
+        if (amount <= 0) throw new Error('Amount must be positive');
+        if (amount > this.balance) throw new Error('Insufficient funds');
+        this.balance -= amount;
+        return this.balance;
+      }
+
+      getInfo() {
+        return {
+          id: this.id,
+          holder: this.holder,
+          balance: this.balance,
+          type: this.constructor.name,
+          createdAt: this.createdAt,
+        };
+      }
+    }
+    Account._nextId = 1;
+
+    // Concrete account types
+    class SavingsAccount extends Account {
+      constructor(holder, balance, interestRate = 0.04) {
+        super(holder, balance);
+        this.interestRate = interestRate;
+      }
+
+      // savings-specific method
+      applyInterest() {
+        this.balance += this.balance * this.interestRate;
       }
     }
 
-    // Router function
-    function router() {
-      const hash = window.location.hash.substring(1); // remove '#'
-      const account = AccountFactory(hash);
-      document.getElementById('content').innerHTML = account.details();
+    class CurrentAccount extends Account {
+      constructor(holder, balance, overdraftLimit = 5000) {
+        super(holder, balance);
+        this.overdraftLimit = overdraftLimit;
+      }
+
+      // allow withdraw up to overdraft limit
+      withdraw(amount) {
+        amount = Number(amount);
+        if (amount <= 0) throw new Error('Amount must be positive');
+        if (amount > this.balance + this.overdraftLimit) throw new Error('Exceeds overdraft limit');
+        this.balance -= amount;
+        return this.balance;
+      }
     }
 
-    // Listen for hash changes (navigation)
-    window.addEventListener("hashchange", router);
+    class LoanAccount extends Account {
+      constructor(holder, loanAmount, interestRate = 0.10) {
+        // For a loan account, balance represents amount owed
+        super(holder, Number(loanAmount));
+        this.interestRate = interestRate;
+        this.isLoan = true;
+      }
 
-    // Load initial page (if any)
-    window.addEventListener("load", router);
+      // on deposit -> reduce loan
+      deposit(amount) {
+        amount = Number(amount);
+        if (amount <= 0) throw new Error('Amount must be positive');
+        this.balance -= amount; // reduce owed amount
+        if (this.balance < 0) this.balance = 0;
+        return this.balance;
+      }
+
+      // withdrawing from loan account is not allowed
+      withdraw() {
+        throw new Error('Withdrawals not allowed from Loan Account');
+      }
+
+      applyInterest() {
+        this.balance += this.balance * this.interestRate;
+      }
+    }
+
+    // Factory
+    class AccountFactory {
+      static create(type, holder, amount) {
+        switch (type) {
+          case 'savings':
+            return new SavingsAccount(holder, amount);
+          case 'current':
+            return new CurrentAccount(holder, amount);
+          case 'loan':
+            return new LoanAccount(holder, amount);
+          default:
+            throw new Error('Unknown account type: ' + type);
+        }
+      }
+    }
+
+    // --------------------------
+    // Simple in-memory repository (simulate persistence)
+    // --------------------------
+    const repository = {
+      accounts: [],
+      add(acc) { this.accounts.push(acc); },
+      removeById(id) { this.accounts = this.accounts.filter(a => a.id !== id); },
+      getById(id) { return this.accounts.find(a => a.id === id); }
+    };
+
+    // --------------------------
+    // UI wiring
+    // --------------------------
+    const form = document.getElementById('createForm');
+    const accountsEl = document.getElementById('accounts');
+
+    function renderAccounts() {
+      accountsEl.innerHTML = '';
+      if (repository.accounts.length === 0) {
+        accountsEl.innerHTML = '<div class="muted">No accounts yet — create one using the form above.</div>';
+        return;
+      }
+
+      repository.accounts.forEach(acc => {
+        const info = acc.getInfo();
+        const div = document.createElement('div');
+        div.className = 'acct';
+
+        const left = document.createElement('div');
+        left.innerHTML = `<div><strong>${info.holder}</strong> <span class="small">(#${info.id})</span></div>
+                          <div class="small">${info.type} • ₹${info.balance.toLocaleString()}</div>`;
+
+        const right = document.createElement('div');
+        right.className = 'controls';
+
+        const depositBtn = document.createElement('button');
+        depositBtn.textContent = 'Deposit';
+        depositBtn.onclick = () => actionPrompt(acc.id, 'deposit');
+
+        const withdrawBtn = document.createElement('button');
+        withdrawBtn.textContent = 'Withdraw';
+        withdrawBtn.onclick = () => actionPrompt(acc.id, 'withdraw');
+
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Close';
+        closeBtn.style.background = '#ef4444';
+        closeBtn.onclick = () => {
+          if (confirm('Close account #' + info.id + ' ?')) { repository.removeById(info.id); renderAccounts(); }
+        };
+
+        right.appendChild(depositBtn);
+        right.appendChild(withdrawBtn);
+        right.appendChild(closeBtn);
+
+        div.appendChild(left);
+        div.appendChild(right);
+        accountsEl.appendChild(div);
+      });
+    }
+
+    function actionPrompt(id, action) {
+      const acc = repository.getById(id);
+      if (!acc) return alert('Account not found');
+      const amt = prompt(`${action} amount for account #${id} (${acc.holder})` , '1000');
+      if (amt === null) return; // cancelled
+      try {
+        if (action === 'deposit') acc.deposit(Number(amt));
+        else if (action === 'withdraw') acc.withdraw(Number(amt));
+        renderAccounts();
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const holder = document.getElementById('holder').value.trim();
+      const type = document.getElementById('type').value;
+      const amount = Number(document.getElementById('balance').value) || 0;
+
+      try {
+        const account = AccountFactory.create(type, holder, amount);
+        repository.add(account);
+        form.reset();
+        document.getElementById('balance').value = 1000;
+        renderAccounts();
+      } catch (err) {
+        alert('Could not create account: ' + err.message);
+      }
+    });
+
+    // seed some sample accounts
+    repository.add(AccountFactory.create('savings', 'Asha Kapoor', 5000));
+    repository.add(AccountFactory.create('current', 'Ravi Verma', 2000));
+    repository.add(AccountFactory.create('loan', 'Kiran Rao', 25000));
+    renderAccounts();
   </script>
-
 </body>
 </html>
