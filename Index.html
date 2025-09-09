@@ -1,1 +1,76 @@
---HTML----
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Food Delivery App - Factory Method</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    button { margin: 5px; padding: 10px 20px; }
+    #output { margin-top: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <h1>Food Delivery App (Factory Method Example)</h1>
+
+  <button onclick="createObject('customer')">Create Customer</button>
+  <button onclick="createObject('delivery')">Create Delivery Partner</button>
+  <button onclick="createObject('restaurant')">Create Restaurant</button>
+
+  <div id="output">Click a button to create an object...</div>
+
+  <script>
+    // === Product Classes ===
+    class Customer {
+      constructor(name) {
+        this.role = "Customer";
+        this.name = name || "Guest Customer";
+      }
+      info() {
+        return `${this.role}: ${this.name}`;
+      }
+    }
+
+    class DeliveryPartner {
+      constructor(name) {
+        this.role = "Delivery Partner";
+        this.name = name || "Anonymous Rider";
+      }
+      info() {
+        return `${this.role}: ${this.name}`;
+      }
+    }
+
+    class Restaurant {
+      constructor(name) {
+        this.role = "Restaurant";
+        this.name = name || "Unnamed Restaurant";
+      }
+      info() {
+        return `${this.role}: ${this.name}`;
+      }
+    }
+
+    // === Factory Method ===
+    function UserFactory(type, name) {
+      switch(type.toLowerCase()) {
+        case "customer": return new Customer(name);
+        case "delivery": return new DeliveryPartner(name);
+        case "restaurant": return new Restaurant(name);
+        default: throw new Error("Unknown type: " + type);
+      }
+    }
+
+    // === Demo function ===
+    function createObject(type) {
+      let obj = UserFactory(type);  // create object via Factory
+      document.getElementById("output").innerHTML = `
+        <strong>Object Created:</strong><br>
+        Role: ${obj.role}<br>
+        Name: ${obj.name}
+      `;
+      console.log(obj); // also log full object
+    }
+  </script>
+
+</body>
+</html>
