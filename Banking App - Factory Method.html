@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Banking App - Factory Method Example</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    nav a { margin: 0 10px; text-decoration: none; color: blue; }
+    #content { margin-top: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+  </style>
+</head>
+<body>
+
+  <h1>Banking App (Factory Method)</h1>
+  
+  <!-- Navigation -->
+  <nav>
+    <a href="#savings">Savings Account</a>
+    <a href="#current">Current Account</a>
+    <a href="#loan">Loan Account</a>
+  </nav>
+
+  <div id="content">Welcome! Choose an account type above.</div>
+
+  <script>
+    // "Products" - Account objects
+    function SavingsAccount() {
+      return {
+        type: "Savings Account",
+        interestRate: "4% per annum",
+        details: function() {
+          return `<h2>${this.type}</h2>
+                  <p>Interest Rate: ${this.interestRate}</p>
+                  <p>Best suited for individuals to save money with safety.</p>`;
+        }
+      };
+    }
+
+    function CurrentAccount() {
+      return {
+        type: "Current Account",
+        overdraftLimit: "₹50,000",
+        details: function() {
+          return `<h2>${this.type}</h2>
+                  <p>Overdraft Limit: ${this.overdraftLimit}</p>
+                  <p>Designed for businesses with high transaction needs.</p>`;
+        }
+      };
+    }
+
+    function LoanAccount() {
+      return {
+        type: "Loan Account",
+        loanType: "Personal Loan",
+        interestRate: "10% per annum",
+        details: function() {
+          return `<h2>${this.type}</h2>
+                  <p>Loan Type: ${this.loanType}</p>
+                  <p>Interest Rate: ${this.interestRate}</p>
+                  <p>Used for credit/loan facilities.</p>`;
+        }
+      };
+    }
+
+    // Factory Method
+    function AccountFactory(accountType) {
+      switch(accountType) {
+        case 'savings': return SavingsAccount();
+        case 'current': return CurrentAccount();
+        case 'loan': return LoanAccount();
+        default: return { details: () => `<h2>404 - Account type not found</h2>` };
+      }
+    }
+
+    // Router function
+    function router() {
+      const hash = window.location.hash.substring(1); // remove '#'
+      const account = AccountFactory(hash);
+      document.getElementById('content').innerHTML = account.details();
+    }
+
+    // Listen for hash changes (navigation)
+    window.addEventListener("hashchange", router);
+
+    // Load initial page (if any)
+    window.addEventListener("load", router);
+  </script>
+
+</body>
+</html>
